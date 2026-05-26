@@ -1,7 +1,19 @@
 import { LEAGUES } from '@/types'
 import { LeagueCard } from '@/components/ui/LeagueCard'
+import { SearchBar } from '@/components/ui/SearchBar'
+import { fetchStandings } from '@/lib/api-football/client'
 
-export default function HomePage() {
+export default async function HomePage() {
+  let allStandings: { leagueSlug: string; entries: Awaited<ReturnType<typeof fetchStandings>> }[] = []
+  try {
+    const results = await Promise.allSettled(
+      LEAGUES.map(async l => ({ leagueSlug: l.slug, entries: await fetchStandings(l.apiId) }))
+    )
+    for (const r of results) {
+      if (r.status === 'fulfilled') allStandings.push(r.value)
+    }
+  } catch { /* graceful degradation */ }
+
   return (
     <div className="space-y-12">
       {/* Hero */}
@@ -12,6 +24,9 @@ export default function HomePage() {
         <p className="text-xl text-gray-400 max-w-2xl mx-auto">
           Deep formation analysis, pressing maps, pass networks and manager philosophies for every team across Europe&apos;s top 5 leagues.
         </p>
+        <div className="flex justify-center pt-2">
+          <SearchBar standings={allStandings} />
+        </div>
         <div className="flex flex-wrap justify-center gap-3 pt-2">
           {['Formations', 'Press Maps', 'Pass Networks', 'Set Pieces', 'Manager DNA', 'FPL Insights'].map(tag => (
             <span key={tag} className="text-xs px-3 py-1 rounded-full border border-[#1e3329] text-gray-400">
@@ -23,9 +38,7 @@ export default function HomePage() {
 
       {/* League Selector */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">
-          Choose a League
-        </h2>
+        <h2 className="text-2xl font-bold mb-6">Choose a League</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {LEAGUES.map(league => (
             <LeagueCard key={league.slug} league={league} />
@@ -49,7 +62,7 @@ export default function HomePage() {
           {
             icon: '🧠',
             title: 'Manager DNA',
-            desc: 'AI-powered deep dives into each manager\'s philosophy, coaching lineage, and tactical innovations.',
+            desc: "AI-powered deep dives into each manager's philosophy, coaching lineage, and tactical innovations.",
           },
         ].map(item => (
           <div key={item.title} className="p-6 rounded-xl border border-[#1e3329] bg-[#111a15] space-y-2">

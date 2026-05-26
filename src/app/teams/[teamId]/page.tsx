@@ -6,6 +6,7 @@ import { FormationPitch } from '@/components/pitch/FormationPitch'
 import { TacticalIdentityCard } from '@/components/ui/TacticalIdentityCard'
 import { RecentResultStrip } from '@/components/ui/RecentResultStrip'
 import { generateMockPressingData } from '@/lib/tactics/pressing'
+import { TacticalRadar, buildRadarData } from '@/components/charts/TacticalRadar'
 
 interface Props {
   params: Promise<{ teamId: string }>
@@ -65,7 +66,13 @@ export default async function TeamOverviewPage({ params, searchParams }: Props) 
         </div>
         <div className="lg:col-span-2 space-y-6">
           {stats ? (
-            <TacticalIdentityCard stats={stats} pressing={pressing} />
+            <>
+              <TacticalIdentityCard stats={stats} pressing={pressing} />
+              <TacticalRadar
+                teamName={teamName}
+                data={buildRadarData(stats, pressing.ppda)}
+              />
+            </>
           ) : (
             <div className="p-4 rounded-xl border border-[#1e3329] bg-[#111a15] text-gray-400 text-sm">
               Stats unavailable — check your API key in .env.local
