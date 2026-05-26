@@ -5,7 +5,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'jsdom',
+    environment: 'happy-dom',
     setupFiles: ['./tests/setup.ts'],
     globals: true,
   },
@@ -13,5 +13,6 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    conditions: ['import', 'module', 'browser', 'default'],
   },
 })
