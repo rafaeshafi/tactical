@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import type { SetPieceRoutine } from '@/lib/tactics/set-pieces'
 import { getRouteColor } from '@/lib/tactics/set-pieces'
@@ -20,11 +20,17 @@ function pointsToPath(start: { x: number; y: number }, path: { x: number; y: num
 export function SetPieceDiagram({ routine, width = 340, height = 280 }: Props) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [key, setKey] = useState(0)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [])
 
   function handlePlay() {
+    if (timerRef.current) clearTimeout(timerRef.current)
     setKey(k => k + 1)
     setIsPlaying(true)
-    setTimeout(() => setIsPlaying(false), 2500)
+    timerRef.current = setTimeout(() => setIsPlaying(false), 2500)
   }
 
   const vbHeight = height * 0.5
@@ -68,8 +74,8 @@ export function SetPieceDiagram({ routine, width = 340, height = 280 }: Props) {
                   fill="none"
                   stroke={color}
                   strokeWidth={2.5}
-                  strokeDasharray="200"
-                  strokeDashoffset={200}
+                  strokeDasharray="1000"
+                  strokeDashoffset={1000}
                   animate={isPlaying ? { strokeDashoffset: 0 } : {}}
                   transition={{ duration: 0.8, delay: i * 0.2, ease: 'easeInOut' }}
                 />
