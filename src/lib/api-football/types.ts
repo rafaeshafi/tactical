@@ -2,7 +2,7 @@ export interface ApiStandingEntry {
   rank: number
   team: { id: number; name: string; logo: string }
   points: number
-  all: { played: number; win: number; draw: number; lose: number; goals: { for: number; against: number } }
+  all: { played: number; win: number; draw: number; lose: number; goals?: { for: number; against: number } }
   goalsDiff: number
   form: string
 }

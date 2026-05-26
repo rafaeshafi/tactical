@@ -1,10 +1,15 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { fetchStandings, fetchTeamStatistics } from '@/lib/api-football/client'
 
 describe('API-Football client', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn())
+    process.env.API_FOOTBALL_KEY = 'test-key'
+  })
+
+  afterEach(() => {
+    delete process.env.API_FOOTBALL_KEY
   })
 
   it('fetchStandings calls correct endpoint with API key header', async () => {
@@ -16,7 +21,6 @@ describe('API-Football client', () => {
       json: async () => mockResponse,
     } as Response)
 
-    process.env.API_FOOTBALL_KEY = 'test-key'
     const result = await fetchStandings(39, 2024)
 
     expect(fetch).toHaveBeenCalledWith(
@@ -37,5 +41,10 @@ describe('API-Football client', () => {
     } as Response)
 
     await expect(fetchStandings(39, 2024)).rejects.toThrow('API-Football error: 429')
+  })
+
+  it('throws when API_FOOTBALL_KEY is not set', async () => {
+    delete process.env.API_FOOTBALL_KEY
+    await expect(fetchStandings(39, 2024)).rejects.toThrow('API_FOOTBALL_KEY is not set')
   })
 })

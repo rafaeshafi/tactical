@@ -23,7 +23,9 @@ async function apiFetch<T>(path: string): Promise<T> {
 }
 
 function leagueSlugFromId(id: number): LeagueSlug {
-  return LEAGUES.find(l => l.apiId === id)?.slug ?? 'premier-league'
+  const league = LEAGUES.find(l => l.apiId === id)
+  if (!league) throw new Error(`Unknown league API ID: ${id}`)
+  return league.slug
 }
 
 function mapTeam(raw: { id: number; name: string; logo: string }, leagueSlug: LeagueSlug): Team {
@@ -59,10 +61,9 @@ export async function fetchStandings(leagueId: number, season = CURRENT_SEASON):
 
 export async function fetchTeamStatistics(teamId: number, leagueId: number, season = CURRENT_SEASON): Promise<TeamStatistics> {
   const leagueSlug = leagueSlugFromId(leagueId)
-  const raw = await apiFetch<ApiTeamStatistics[]>(
+  const s = await apiFetch<ApiTeamStatistics>(
     `/teams/statistics?team=${teamId}&league=${leagueId}&season=${season}`
   )
-  const s = raw[0]
   const topFormation = s.lineups.sort((a, b) => b.played - a.played)[0]?.formation ?? '4-3-3'
   const totalYellow = Object.values(s.cards.yellow).reduce((sum, v) => sum + (v.total ?? 0), 0)
   const totalRed = Object.values(s.cards.red).reduce((sum, v) => sum + (v.total ?? 0), 0)
