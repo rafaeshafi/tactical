@@ -32,3 +32,7 @@
 {"type":"edit","file":"/Users/rafaeshafi/football-tactics/src/components/ui/StandingsTable.tsx","timestamp":1779818581085,"sessionId":null}
 {"type":"edit","file":"/Users/rafaeshafi/football-tactics/src/components/ui/TacticalMetaPanel.tsx","timestamp":1779818593340,"sessionId":null}
 {"type":"edit","file":"/Users/rafaeshafi/football-tactics/src/app/leagues/[league]/page.tsx","timestamp":1779818615182,"sessionId":null}
+{"type":"edit","file":"/Users/rafaeshafi/football-tactics/tests/lib/tactics/formations.test.ts","timestamp":1779818733522,"sessionId":null}
+{"type":"edit","file":"/Users/rafaeshafi/football-tactics/src/lib/tactics/formations.ts","timestamp":1779818744308,"sessionId":null}
+{"type":"edit","file":"/Users/rafaeshafi/football-tactics/tests/components/pitch/PitchCanvas.test.tsx","timestamp":1779818891591,"sessionId":null}
+{"type":"edit","file":"/Users/rafaeshafi/football-tactics/src/components/pitch/PitchCanvas.tsx","timestamp":1779818910556,"sessionId":null}
