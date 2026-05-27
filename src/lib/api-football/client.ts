@@ -4,13 +4,8 @@ import { LEAGUES } from '@/types'
 
 const BASE_URL = 'https://v3.football.api-sports.io'
 
-/** Football seasons run Aug–May. Season 2025 = the 2025/26 campaign. */
-function currentSeason(): number {
-  const now = new Date()
-  // Season starts in August. Before August → previous season.
-  return now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1
-}
-const CURRENT_SEASON = currentSeason()
+/** API-Sports free plan caps at season 2024 (2024/25). Upgrade to access 2025+. */
+const CURRENT_SEASON = 2024
 
 function getHeaders() {
   const key = process.env.API_FOOTBALL_KEY
