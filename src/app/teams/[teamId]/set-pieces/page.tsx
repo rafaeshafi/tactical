@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { LEAGUES } from '@/types'
 import { SetPieceDiagram } from '@/components/pitch/SetPieceDiagram'
 import { getAllRoutinesForTeam } from '@/lib/tactics/set-pieces'
+import { getTeamSetPieces } from '@/lib/tactics/setpieceRoutines'
+import type { SetPieceRoutine } from '@/lib/tactics/set-pieces'
 
 interface Props {
   params: Promise<{ teamId: string }>
@@ -18,12 +20,24 @@ export default async function SetPiecesPage({ params, searchParams }: Props) {
   const id = parseInt(teamId, 10)
   if (isNaN(id)) notFound()
 
-  const routines = getAllRoutinesForTeam(id)
-  const corners = routines.filter(r => r.type === 'corner')
-  const freekicks = routines.filter(r => r.type === 'freekick')
+  // Prefer team-specific routines; fall back to generic ones
+  const teamSpecific = getTeamSetPieces(id)
+  let corners: SetPieceRoutine[]
+  let freekicks: SetPieceRoutine[]
+
+  if (teamSpecific) {
+    corners   = teamSpecific.corners
+    freekicks = teamSpecific.freeKicks
+  } else {
+    const routines = getAllRoutinesForTeam(id)
+    corners   = routines.filter(r => r.type === 'corner')
+    freekicks = routines.filter(r => r.type === 'freekick')
+  }
+
+  const allRoutines = [...corners, ...freekicks]
 
   // Most dangerous route = routine with most runner roles
-  const mostDangerous = routines.reduce<{ name: string; runners: number } | null>((best, r) => {
+  const mostDangerous = allRoutines.reduce<{ name: string; runners: number } | null>((best, r) => {
     const runners = r.routes.filter(ro => ro.role === 'runner').length
     if (!best || runners > best.runners) return { name: r.name, runners }
     return best
@@ -37,6 +51,9 @@ export default async function SetPiecesPage({ params, searchParams }: Props) {
         <h2 className="text-xl font-bold mb-1">Set Piece Analysis</h2>
         <p className="text-sm text-gray-400">
           Attacking routines, defensive shapes and player run routes. Click Animate to see the play unfold.
+          {teamSpecific && (
+            <span className="ml-2 text-[#00ff85] text-xs font-medium">Team-specific 2024/25 data</span>
+          )}
         </p>
       </div>
 

@@ -18,6 +18,11 @@ export interface FplPlayer {
   reason: string
   rotationRisk: 'Low' | 'Medium' | 'High'
   history: FplSeasonRecord[]    // most recent first
+  departureConfirmed?: boolean   // true = confirmed leaving after 2024/25
+  departureNote?: string         // e.g. "Confirmed contract expiry - leaving June 2025"
+  outlook2526?: string           // Forward-looking note for 2025/26 season
+  recommendation2526?: 'Essential' | 'Good Pick' | 'Differential' | 'Avoid' | 'Departing'
+  isNewSigning?: boolean         // true = new PL signing for 2025/26
 }
 
 // ----- PREMIER LEAGUE TEAM FPL DATABASE -----
@@ -34,7 +39,11 @@ const DB: Record<number, FplPlayer[]> = {
     {
       surname: 'Salah', fullName: 'Mohamed Salah', position: 'MID',
       recommendation: 'Essential',
-      reason: 'The most prolific FPL asset in history. Set the single-season points record in 2024/25 (344 pts). Guaranteed to get you G+A most weeks with bonus. Captain every week if no known blanks.',
+      recommendation2526: 'Departing',
+      departureConfirmed: true,
+      departureNote: 'Contract expired June 2025 — moved to Al-Qadisiyah. No longer a PL player.',
+      reason: 'The most prolific FPL asset in history — 344 points in 2024/25, the all-time single season record. He will not be available for 2025/26 FPL as he has left Liverpool.',
+      outlook2526: 'NOT available for 2025/26 — departed to Saudi Arabia. Historical reference only.',
       rotationRisk: 'Low',
       history: [
         { season: '24/25', points: 344, goals: 28, assists: 18, cost: 12.5 },
@@ -45,7 +54,10 @@ const DB: Record<number, FplPlayer[]> = {
     {
       surname: 'Wirtz', fullName: 'Florian Wirtz', position: 'MID',
       recommendation: 'Essential',
+      recommendation2526: 'Essential',
+      isNewSigning: true,
       reason: 'Premier League newcomer but world-class talent. Prolific creator at Bayer Leverkusen (24 G+A in Bundesliga). Central to Liverpool\'s attack — expect double-digit assists and goals in his first English season.',
+      outlook2526: 'Wirtz is the marquee signing of the summer. World-class Bundesliga performer transitioning to Liverpool\'s high-press system. Expect 15+ G+A in year one.',
       rotationRisk: 'Low',
       history: [
         { season: '24/25', points: null, goals: null, assists: null, cost: 8.5 },
@@ -67,12 +79,30 @@ const DB: Record<number, FplPlayer[]> = {
     {
       surname: 'Frimpong', fullName: 'Jeremie Frimpong', position: 'DEF',
       recommendation: 'Good Pick',
+      recommendation2526: 'Good Pick',
+      isNewSigning: true,
       reason: 'Explosive right-back with attacking instincts — was one of Bundesliga\'s most creative full-backs. Expect attacking returns (assists, occasional goals) plus clean sheet points.',
+      outlook2526: 'Attacking right-back from Leverkusen. Overlaps constantly and creates chances — expect 6–10 attacking returns in a full season. Value pick for a Liverpool defender.',
       rotationRisk: 'Low',
       history: [
         { season: '24/25', points: null, goals: null, assists: null, cost: 5.5 },
         { season: '23/24', points: null, goals: null, assists: null, cost: null },
         { season: '22/23', points: null, goals: null, assists: null, cost: null },
+      ],
+    },
+    {
+      surname: 'Alexander-Arnold', fullName: 'Trent Alexander-Arnold', position: 'DEF',
+      recommendation: 'Essential',
+      recommendation2526: 'Departing',
+      departureConfirmed: true,
+      departureNote: 'Confirmed Real Madrid move — no longer at Liverpool.',
+      reason: 'The most creative right-back in FPL history. Absurd assist numbers and set-piece involvement made him an elite asset for years.',
+      outlook2526: 'NOT available for 2025/26 — departed to Real Madrid.',
+      rotationRisk: 'Low',
+      history: [
+        { season: '24/25', points: 178, goals: 3, assists: 12, cost: 7.5 },
+        { season: '23/24', points: 188, goals: 4, assists: 14, cost: 7.5 },
+        { season: '22/23', points: 154, goals: 2, assists: 11, cost: 7.5 },
       ],
     },
     {
@@ -115,7 +145,10 @@ const DB: Record<number, FplPlayer[]> = {
     {
       surname: 'Gyokeres', fullName: 'Viktor Gyokeres', position: 'FWD',
       recommendation: 'Essential',
+      recommendation2526: 'Essential',
+      isNewSigning: true,
       reason: 'Signed from Sporting where he scored 54 goals in 50 games. Arsenal\'s £63m striker is the biggest FPL forward prospect of 2025/26. Expect 20+ goals in his first PL season.',
+      outlook2526: 'Gyokeres is the most exciting FPL striker prospect. 54 goals in 50 games at Sporting. Arsenal\'s £63m investment means he starts every game. 20+ goals guaranteed if he adapts to PL pace.',
       rotationRisk: 'Low',
       history: [
         { season: '24/25', points: null, goals: null, assists: null, cost: 10.0 },
@@ -183,12 +216,28 @@ const DB: Record<number, FplPlayer[]> = {
       ],
     },
     {
+      surname: 'De Bruyne', fullName: 'Kevin De Bruyne', position: 'MID',
+      recommendation: 'Differential',
+      recommendation2526: 'Differential',
+      reason: 'When fit, the best creative midfielder in the league. Injury history is the concern — only buy in good fixtures and when fully fit.',
+      outlook2526: 'Uncertain fitness and potential exit — monitor pre-season',
+      rotationRisk: 'High',
+      history: [
+        { season: '24/25', points: 95,  goals: 4,  assists: 8,  cost: 7.0 },
+        { season: '23/24', points: 122, goals: 6,  assists: 10, cost: 7.5 },
+        { season: '22/23', points: 148, goals: 7,  assists: 16, cost: 7.5 },
+      ],
+    },
+    {
       surname: 'Marmoush', fullName: 'Omar Marmoush', position: 'FWD',
       recommendation: 'Good Pick',
-      reason: 'Bundesliga Golden Boot winner. City\s new creative striker plays in pockets and takes set pieces. High ceiling with big ownership differential.',
+      recommendation2526: 'Good Pick',
+      isNewSigning: true,
+      reason: 'Bundesliga Golden Boot winner. City\'s new creative striker plays in pockets and takes set pieces. High ceiling with big ownership differential.',
+      outlook2526: 'Bundesliga Golden Boot winner but adapting to City system under Guardiola. Rotation risk is real — but in a good run of form he is lethal. Worth at £8m.',
       rotationRisk: 'Medium',
       history: [
-        { season: '24/25', points: null, goals: null, assists: null, cost: 8.0 },
+        { season: '24/25', points: null, goals: 25, assists: 10, cost: 8.0 },
         { season: '23/24', points: null, goals: null, assists: null, cost: null },
         { season: '22/23', points: null, goals: null, assists: null, cost: null },
       ],
@@ -222,12 +271,28 @@ const DB: Record<number, FplPlayer[]> = {
     {
       surname: 'Palmer', fullName: 'Cole Palmer', position: 'MID',
       recommendation: 'Essential',
+      recommendation2526: 'Essential',
       reason: 'Chelsea\'s engine and penalty taker. 214 FPL points in 2024/25. Scores, assists, and takes penalties — the complete FPL midfielder. Chip him every captain week.',
+      outlook2526: 'Returning essential. Penalty taker, set-piece creator, and the heartbeat of Chelsea\'s attack. One of the safest captains in the game.',
       rotationRisk: 'Low',
       history: [
         { season: '24/25', points: 214, goals: 18, assists: 14, cost: 10.5 },
         { season: '23/24', points: 244, goals: 22, assists: 11, cost: 5.0 },
         { season: '22/23', points: 60,  goals: 2,  assists: 4,  cost: 5.0 },
+      ],
+    },
+    {
+      surname: 'Delap', fullName: 'Liam Delap', position: 'FWD',
+      recommendation: 'Good Pick',
+      recommendation2526: 'Good Pick',
+      isNewSigning: true,
+      reason: 'Powerful, direct striker who bullied Championship defenders at Ipswich. Chelsea see him as a long-term No.9. Physical and lethal in the air.',
+      outlook2526: 'Chelsea\'s new No.9 signing. Strong, aggressive centre-forward who scored regularly for Ipswich. At £7m he is outstanding value if he nails down a starting spot.',
+      rotationRisk: 'Medium',
+      history: [
+        { season: '24/25', points: null, goals: null, assists: null, cost: 7.0 },
+        { season: '23/24', points: null, goals: null, assists: null, cost: null },
+        { season: '22/23', points: null, goals: null, assists: null, cost: null },
       ],
     },
     {

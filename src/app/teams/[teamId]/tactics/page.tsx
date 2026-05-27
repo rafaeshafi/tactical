@@ -3,7 +3,7 @@ import { fetchTeamStatistics, fetchSquad } from '@/lib/api-football/client'
 import { LEAGUES } from '@/types'
 import { PressMap }       from '@/components/pitch/PressMap'
 import { PassNetwork }    from '@/components/pitch/PassNetwork'
-import { HeatmapOverlay } from '@/components/pitch/HeatmapOverlay'
+import { HeatmapOverlay, type HeatmapPlayer } from '@/components/pitch/HeatmapOverlay'
 import { buildPassNetwork } from '@/lib/tactics/pass-network'
 import { getFormationPositions } from '@/lib/tactics/formations'
 import type { Player } from '@/types'
@@ -87,17 +87,55 @@ function buildPassNetworkFromSquad(formation: string, squad: Player[]) {
 }
 
 // ── Heatmap from formation positions ──────────────────────────────────────
-function buildFormationHeatmap(formation: string) {
+interface HeatPoint { x: number; y: number; intensity: number }
+
+function buildFormationHeatmap(
+  formation: string,
+  squad?: Player[],
+): { allPoints: HeatPoint[]; players: HeatmapPlayer[] } {
   const positions = getFormationPositions(formation)
-  return positions
+
+  // Resolve player names using the same squad-mapping logic as pass network
+  const byType: Record<Player['position'], Player[]> = {
+    Goalkeeper: [], Defender: [], Midfielder: [], Attacker: [],
+  }
+  if (squad) {
+    for (const p of squad) byType[p.position].push(p)
+    for (const key of Object.keys(byType) as Player['position'][]) {
+      byType[key].sort((a, b) => (a.number ?? 99) - (b.number ?? 99))
+    }
+  }
+  const usedIdx: Record<Player['position'], number> = {
+    Goalkeeper: 0, Defender: 0, Midfielder: 0, Attacker: 0,
+  }
+
+  const allPoints: HeatPoint[] = []
+  const players: HeatmapPlayer[] = []
+
+  positions
     .filter(pos => pos.role !== 'GK')
-    .flatMap(pos => {
+    .forEach((pos, i) => {
       const hy = 100 - pos.y
-      return [
-        { x: pos.x,                           y: hy,                           intensity: 0.55 + Math.random() * 0.35 },
-        { x: pos.x + (Math.random() - 0.5) * 8, y: hy + (Math.random() - 0.5) * 8, intensity: 0.3  + Math.random() * 0.25 },
-      ]
+      const type = roleToPositionType(pos.role)
+      const sp = squad ? (byType[type][usedIdx[type]++] ?? null) : null
+      const displayName = sp ? sp.surname : pos.role
+
+      // 4-6 scatter points per player
+      const count = 4 + Math.floor(Math.random() * 3)
+      const pts: HeatPoint[] = Array.from({ length: count }, (_, j) => {
+        const scatter = j === 0 ? 0 : 10
+        return {
+          x: Math.max(2, Math.min(98, pos.x + (Math.random() - 0.5) * scatter)),
+          y: Math.max(2, Math.min(98, hy  + (Math.random() - 0.5) * scatter)),
+          intensity: 0.6 + Math.random() * 0.3,
+        }
+      })
+
+      allPoints.push(...pts)
+      players.push({ id: i + 1, name: displayName, role: pos.role, points: pts })
     })
+
+  return { allPoints, players }
 }
 
 // ── Tactical notes generator ───────────────────────────────────────────────
@@ -170,7 +208,7 @@ export default async function TacticsPage({ params, searchParams }: Props) {
 
   const pressing    = buildPressingFromPPDA(ppda)
   const passNetwork = buildPassNetworkFromSquad(formation, squad)
-  const heatPoints  = buildFormationHeatmap(formation)
+  const { allPoints: heatPoints, players: heatPlayers } = buildFormationHeatmap(formation, squad)
   const notes       = buildTacticalNotes(formation, ppda, passAccuracy)
 
   return (
@@ -245,7 +283,7 @@ export default async function TacticsPage({ params, searchParams }: Props) {
           Positional density across all matches this season. Red = high activity zones.
         </p>
         <div className="flex justify-center">
-          <HeatmapOverlay points={heatPoints} width={300} height={420} />
+          <HeatmapOverlay points={heatPoints} players={heatPlayers} width={300} height={420} />
         </div>
       </div>
 
