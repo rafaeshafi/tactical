@@ -257,6 +257,8 @@ export function TacticsBoard({ teamId, initialFormation = '4-3-3', squad = [] }:
               dragElastic={0}
               style={{
                 position: 'absolute',
+                left: 0,
+                top: 0,
                 x: player.x - TOKEN / 2,
                 y: player.y - TOKEN / 2,
                 touchAction: 'none',
