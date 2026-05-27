@@ -10,11 +10,13 @@ export default async function TeamLayout({ children, params }: Props) {
   const { teamId } = await params
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-0">
       <Suspense fallback={<div className="h-10" />}>
         <TeamHubNav teamId={teamId} />
       </Suspense>
-      {children}
+      <div className="pt-8">
+        {children}
+      </div>
     </div>
   )
 }
