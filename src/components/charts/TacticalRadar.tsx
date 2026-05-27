@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend } from 'recharts'
 
 interface RadarDataPoint {
@@ -13,6 +14,16 @@ interface Props {
 }
 
 export function TacticalRadar({ teamName, data }: Props) {
+  // Recharts calls ResizeObserver during render — skip SSR entirely
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
+  if (!mounted) {
+    return (
+      <div className="p-5 rounded-xl border border-[#1e3329] bg-[#111a15] h-[300px] animate-pulse" />
+    )
+  }
+
   return (
     <div className="p-5 rounded-xl border border-[#1e3329] bg-[#111a15]">
       <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Tactical Profile</h3>
