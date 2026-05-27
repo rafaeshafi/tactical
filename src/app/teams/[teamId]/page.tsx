@@ -10,6 +10,7 @@ import { generateMockPressingData } from '@/lib/tactics/pressing'
 import { TacticalRadar } from '@/components/charts/TacticalRadar'
 import { buildRadarData } from '@/lib/tactics/radarData'
 import { mapPlayersToFormation } from '@/lib/tactics/playerMapping'
+import { getTeamStatOverrides } from '@/lib/tactics/teamStats'
 
 interface Props {
   params: Promise<{ teamId: string }>
@@ -62,7 +63,17 @@ export default async function TeamOverviewPage({ params, searchParams }: Props) 
     console.error('[TeamPage] squad error:', e)
   }
 
-  const pressing = generateMockPressingData('balanced')
+  // Apply real 2025/26 stat overrides (pass accuracy + PPDA) when available
+  const overrides = getTeamStatOverrides(id)
+  if (stats && overrides) {
+    stats = { ...stats, passAccuracy: overrides.passAccuracy }
+  }
+  const ppda = overrides?.ppda ?? 10.2
+  const pressStyle = ppda < 7 ? 'aggressive' : ppda < 12 ? 'balanced' : 'defensive'
+  const pressing = generateMockPressingData(pressStyle)
+  // Override the ppda with the real value (generateMockPressingData uses fixed buckets)
+  const pressingWithRealPPDA = { ...pressing, ppda }
+
   const formation = stats?.formation ?? '4-3-3'
 
   // Map real players to formation positions
@@ -103,10 +114,10 @@ export default async function TeamOverviewPage({ params, searchParams }: Props) 
         <div className="lg:col-span-2 space-y-6">
           {stats ? (
             <>
-              <TacticalIdentityCard stats={stats} pressing={pressing} standing={standing} />
+              <TacticalIdentityCard stats={stats} pressing={pressingWithRealPPDA} standing={standing} />
               <TacticalRadar
                 teamName={teamName}
-                data={buildRadarData(stats, pressing.ppda)}
+                data={buildRadarData(stats, pressingWithRealPPDA.ppda)}
               />
             </>
           ) : (

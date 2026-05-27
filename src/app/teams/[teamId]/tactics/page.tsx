@@ -8,6 +8,7 @@ import { buildPassNetwork } from '@/lib/tactics/pass-network'
 import { getFormationPositions } from '@/lib/tactics/formations'
 import type { Player } from '@/types'
 import type { PressingData } from '@/lib/tactics/pressing'
+import { getTeamStatOverrides } from '@/lib/tactics/teamStats'
 
 interface Props {
   params: Promise<{ teamId: string }>
@@ -119,17 +120,19 @@ export default async function TacticsPage({ params, searchParams }: Props) {
   const id = parseInt(teamId, 10)
   if (isNaN(id)) notFound()
 
-  // Real stats (formation + derive press profile from win rate)
+  // Real stats (formation + real PPDA from 2025/26 dataset)
   let formation = '4-3-3'
   let ppda = 10.2 // league average fallback
   try {
     const stats = await fetchTeamStatistics(id, meta.apiId)
     formation = stats.formation
-    // Approximate PPDA from win rate — better teams press higher
-    const played = Math.max(stats.fixturesPlayed, 1)
-    const winRate = stats.wins / played
-    ppda = winRate > 0.55 ? 7.5 : winRate > 0.40 ? 9.2 : winRate > 0.25 ? 11.8 : 14.5
   } catch { /* keep defaults */ }
+
+  // Use real 2025/26 PPDA when available; fall back to league average
+  const overrides = getTeamStatOverrides(id)
+  if (overrides) {
+    ppda = overrides.ppda
+  }
 
   // Real squad (for player names in pass network)
   let squad: Player[] = []
