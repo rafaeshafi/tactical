@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { LEAGUES } from '@/types'
 import { LeagueCard } from '@/components/ui/LeagueCard'
 import { SearchBar } from '@/components/ui/SearchBar'

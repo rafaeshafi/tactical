@@ -21,7 +21,7 @@ function getHeaders() {
 
 async function apiFetch<T>(path: string): Promise<T> {
   const url = `${BASE_URL}${path}`
-  const res = await fetch(url, { headers: getHeaders(), next: { revalidate: 86400 } } as RequestInit)
+  const res = await fetch(url, { headers: getHeaders(), cache: 'no-store' } as RequestInit)
   if (!res.ok) throw new Error(`API-Football HTTP error: ${res.status}`)
   const data = await res.json()
   // API-Sports returns errors inside the body even on 200 OK

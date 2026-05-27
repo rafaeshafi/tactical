@@ -107,4 +107,4 @@ export default async function LeaguePage({ params }: Props) {
   )
 }
 
-export const revalidate = 86400
+export const dynamic = 'force-dynamic'
