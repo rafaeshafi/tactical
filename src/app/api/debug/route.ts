@@ -18,7 +18,7 @@ export async function GET() {
 
   try {
     const res = await fetch(
-      'https://v3.football.api-sports.io/standings?league=39&season=2024',
+      'https://v3.football.api-sports.io/standings?league=39&season=2025',
       {
         headers: {
           'x-apisports-key': key,
