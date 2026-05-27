@@ -1,60 +1,162 @@
 import { FormationBadge } from './FormationBadge'
-import { StatPill } from './StatPill'
-import type { TeamStatistics } from '@/types'
+import type { TeamStatistics, Standing } from '@/types'
 import type { PressingData } from '@/lib/tactics/pressing'
+import {
+  analyzeRecord,
+  analyzeAttack,
+  analyzeDefence,
+  analyzePressing,
+  analyzeDiscipline,
+  describeFormation,
+} from '@/lib/tactics/statAnalysis'
 
 interface Props {
   stats: TeamStatistics
   pressing: PressingData
+  standing?: Standing | null
 }
 
-function getStyleLabel(pressing: PressingData, stats: TeamStatistics): string {
-  const parts: string[] = []
-  parts.push(pressing.pressStyle)
-  if (stats.passAccuracy > 85) parts.push('Possession')
-  else if (stats.passAccuracy < 75) parts.push('Direct')
-  return parts.join(' · ')
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">{children}</p>
+  )
 }
 
-export function TacticalIdentityCard({ stats, pressing }: Props) {
-  const styleLabel = getStyleLabel(pressing, stats)
+function AnalysisBlock({
+  headline,
+  detail,
+  colorClass,
+}: {
+  headline: string
+  detail: string
+  colorClass: string
+}) {
+  return (
+    <div className="mt-1.5">
+      <p className={`text-sm font-semibold leading-snug ${colorClass}`}>{headline}</p>
+      {detail && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{detail}</p>}
+    </div>
+  )
+}
+
+export function TacticalIdentityCard({ stats, pressing, standing }: Props) {
+  const played = stats.fixturesPlayed || 1
+
+  const recordAnalysis  = analyzeRecord(stats.wins, stats.draws, stats.losses, stats.fixturesPlayed)
+  const attackAnalysis  = analyzeAttack(stats.goalsFor, played)
+  const defenceAnalysis = analyzeDefence(stats.goalsAgainst, played)
+  const pressAnalysis   = analyzePressing(pressing.ppda)
+  const discAnalysis    = analyzeDiscipline(stats.yellowCards, stats.redCards, played)
+  const formationDesc   = describeFormation(stats.formation)
+
+  const passAcc = stats.passAccuracy > 0 ? `${stats.passAccuracy}%` : null
 
   return (
-    <div className="p-5 rounded-xl border border-[#1e3329] bg-[#111a15] space-y-4">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2">
+    <div className="rounded-xl border border-[#1e3329] bg-[#0d1810] divide-y divide-[#1a2e22] overflow-hidden">
+
+      {/* ── Header: formation + record ── */}
+      <div className="p-5 flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
             <FormationBadge formation={stats.formation} className="text-sm px-3 py-1" />
-            <span className="text-xs text-gray-400">{styleLabel}</span>
+            <span className="text-xs text-gray-400">{pressing.pressStyle}</span>
+            {standing && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1a2e22] text-gray-400">
+                #{standing.rank} · {standing.points} pts
+              </span>
+            )}
           </div>
-          <p className="text-xs text-gray-500 mt-1">Season 2024/25</p>
+          <AnalysisBlock {...recordAnalysis} />
         </div>
-        <div className="text-right">
-          <p className="text-2xl font-bold text-[#00ff85]">{stats.wins}W</p>
-          <p className="text-xs text-gray-400">{stats.draws}D {stats.losses}L</p>
+        <div className="shrink-0 text-right">
+          <p className="text-2xl font-black text-[#00ff85] tabular-nums">{stats.wins}W</p>
+          <p className="text-xs text-gray-400 tabular-nums">{stats.draws}D {stats.losses}L</p>
+          <p className="text-[10px] text-gray-600 mt-0.5">Season 2025/26</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
-        <StatPill label="PPDA" value={pressing.ppda} highlight />
-        <StatPill label="Pass Acc" value={`${stats.passAccuracy}%`} />
-        <StatPill label="Goals F" value={stats.goalsFor} />
-        <StatPill label="Goals A" value={stats.goalsAgainst} />
+      {/* ── Formation description ── */}
+      <div className="px-5 py-4">
+        <SectionLabel>Tactical Shape</SectionLabel>
+        <p className="text-xs text-gray-400 leading-relaxed">{formationDesc}</p>
       </div>
 
-      <div className="flex items-center gap-2 pt-1 border-t border-[#1e3329]">
-        <div
-          className="text-xs px-2 py-0.5 rounded-full font-medium"
-          style={{
-            background: pressing.pressStyle === 'High Press' ? 'rgba(239,68,68,0.15)' :
-              pressing.pressStyle === 'Mid Block' ? 'rgba(245,158,11,0.15)' : 'rgba(59,130,246,0.15)',
-            color: pressing.pressStyle === 'High Press' ? '#ef4444' :
-              pressing.pressStyle === 'Mid Block' ? '#f59e0b' : '#3b82f6',
-          }}
-        >
-          {pressing.recoveryZone} recovery
+      {/* ── Attack + Defence ── */}
+      <div className="grid grid-cols-2 divide-x divide-[#1a2e22]">
+        <div className="px-5 py-4">
+          <SectionLabel>⚽ Attack</SectionLabel>
+          <p className="text-3xl font-black tabular-nums text-white">{stats.goalsFor}</p>
+          <p className="text-xs text-gray-500">goals scored</p>
+          <AnalysisBlock {...attackAnalysis} />
+        </div>
+        <div className="px-5 py-4">
+          <SectionLabel>🛡 Defence</SectionLabel>
+          <p className="text-3xl font-black tabular-nums text-white">{stats.goalsAgainst}</p>
+          <p className="text-xs text-gray-500">goals conceded</p>
+          <AnalysisBlock {...defenceAnalysis} />
         </div>
       </div>
+
+      {/* ── Pressing ── */}
+      <div className="px-5 py-4">
+        <SectionLabel>⚡ Pressing Intensity</SectionLabel>
+        <div className="flex items-baseline gap-3 mb-1">
+          <span className="text-3xl font-black tabular-nums text-white">{pressing.ppda}</span>
+          <span className="text-xs text-gray-500">PPDA · {pressing.recoveryZone} recovery</span>
+        </div>
+        {/* PPDA bar */}
+        <div className="relative h-1.5 w-full rounded-full bg-[#1a2e22] overflow-hidden mb-2">
+          <div
+            className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-[#00ff85] to-[#00b4ff] transition-all"
+            style={{ width: `${Math.min(100, Math.max(5, ((20 - pressing.ppda) / 16) * 100))}%` }}
+          />
+        </div>
+        <div className="flex justify-between text-[9px] text-gray-600 mb-2">
+          <span>High press (3)</span>
+          <span>Mid block (10)</span>
+          <span>Low block (20)</span>
+        </div>
+        <AnalysisBlock {...pressAnalysis} />
+      </div>
+
+      {/* ── Pass accuracy (if available) + Discipline ── */}
+      <div className="grid grid-cols-2 divide-x divide-[#1a2e22]">
+        <div className="px-5 py-4">
+          <SectionLabel>🎯 Pass Accuracy</SectionLabel>
+          {passAcc ? (
+            <>
+              <p className="text-3xl font-black tabular-nums text-white">{passAcc}</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {stats.passAccuracy >= 85
+                  ? 'Elite possession game'
+                  : stats.passAccuracy >= 78
+                  ? 'Comfortable in possession'
+                  : 'Direct, long-ball tendency'}
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-3xl font-black text-gray-600">—</p>
+              <p className="text-xs text-gray-600 mt-0.5">Not yet available</p>
+            </>
+          )}
+        </div>
+        <div className="px-5 py-4">
+          <SectionLabel>🟨 Discipline</SectionLabel>
+          <div className="flex items-baseline gap-2">
+            <p className="text-3xl font-black tabular-nums text-white">{stats.yellowCards}</p>
+            <span className="text-xs text-gray-500">yellow</span>
+            {stats.redCards > 0 && (
+              <>
+                <p className="text-xl font-black tabular-nums text-red-400 ml-1">{stats.redCards}</p>
+                <span className="text-xs text-gray-500">red</span>
+              </>
+            )}
+          </div>
+          <AnalysisBlock {...discAnalysis} />
+        </div>
+      </div>
+
     </div>
   )
 }

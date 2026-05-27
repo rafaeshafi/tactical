@@ -28,11 +28,12 @@ export default async function TeamOverviewPage({ params, searchParams }: Props) 
   let fixtures: Awaited<ReturnType<typeof fetchRecentFixtures>> = []
   let teamName = 'Team'
   let crestUrl = ''
+  let standing: Awaited<ReturnType<typeof fetchStandings>>[number] | null = null
 
   // Fetch standings first so team name always shows even if stats fail
   try {
     const standings = await fetchStandings(meta.apiId)
-    const standing = standings.find(st => st.team.id === id)
+    standing = standings.find(st => st.team.id === id) ?? null
     teamName = standing?.team.name ?? 'Team'
     crestUrl = standing?.team.crestUrl ?? ''
   } catch (e) {
@@ -75,7 +76,7 @@ export default async function TeamOverviewPage({ params, searchParams }: Props) 
         <div className="lg:col-span-2 space-y-6">
           {stats ? (
             <>
-              <TacticalIdentityCard stats={stats} pressing={pressing} />
+              <TacticalIdentityCard stats={stats} pressing={pressing} standing={standing} />
               <TacticalRadar
                 teamName={teamName}
                 data={buildRadarData(stats, pressing.ppda)}
