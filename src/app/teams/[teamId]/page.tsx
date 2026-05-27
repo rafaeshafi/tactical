@@ -56,7 +56,7 @@ export default async function TeamOverviewPage({ params, searchParams }: Props) 
         )}
         <div>
           <h1 className="text-3xl font-extrabold">{teamName}</h1>
-          <p className="text-gray-400 text-sm mt-0.5">{meta.name} · 2024/25 Season</p>
+          <p className="text-gray-400 text-sm mt-0.5">{meta.name} · 2025/26 Season</p>
         </div>
       </div>
 
@@ -74,8 +74,9 @@ export default async function TeamOverviewPage({ params, searchParams }: Props) 
               />
             </>
           ) : (
-            <div className="p-4 rounded-xl border border-[#1e3329] bg-[#111a15] text-gray-400 text-sm">
-              Stats unavailable — check your API key in .env.local
+            <div className="flex items-center gap-3 p-4 rounded-xl border border-[#1a2e22] bg-[#0d1810] text-gray-400 text-sm">
+              <span className="text-xl">⚠️</span>
+              <span>Stats unavailable — API plan upgrade required for 2025/26 data</span>
             </div>
           )}
           <RecentResultStrip fixtures={fixtures} teamId={id} />
