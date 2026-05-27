@@ -4,8 +4,8 @@ import { LEAGUES } from '@/types'
 
 const BASE_URL = 'https://v3.football.api-sports.io'
 
-/** API-Sports free plan caps at season 2024 (2024/25). Upgrade to access 2025+. */
-const CURRENT_SEASON = 2024
+/** Season 2025 = the 2025/26 campaign. Requires a paid API-Sports plan. */
+const CURRENT_SEASON = 2025
 
 function getHeaders() {
   const key = process.env.API_FOOTBALL_KEY
