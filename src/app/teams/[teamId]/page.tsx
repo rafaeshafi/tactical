@@ -6,7 +6,8 @@ import { FormationPitch } from '@/components/pitch/FormationPitch'
 import { TacticalIdentityCard } from '@/components/ui/TacticalIdentityCard'
 import { RecentResultStrip } from '@/components/ui/RecentResultStrip'
 import { generateMockPressingData } from '@/lib/tactics/pressing'
-import { TacticalRadar, buildRadarData } from '@/components/charts/TacticalRadar'
+import { TacticalRadar } from '@/components/charts/TacticalRadar'
+import { buildRadarData } from '@/lib/tactics/radarData'
 
 interface Props {
   params: Promise<{ teamId: string }>
