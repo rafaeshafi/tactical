@@ -7,7 +7,7 @@ export interface FplSeasonRecord {
   goals: number | null
   assists: number | null
   cleanSheets?: number | null
-  cost: number     // £m at season start
+  cost: number | null  // £m at season start (null if not in PL that season)
 }
 
 export interface FplPlayer {

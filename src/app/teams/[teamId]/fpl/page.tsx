@@ -126,10 +126,12 @@ function PlayerCard({ player }: { player: FplPlayer }) {
               <p className="font-bold text-blue-300">{latest.cleanSheets}</p>
             </div>
           )}
-          <div>
-            <p className="text-xs text-gray-500">Cost</p>
-            <p className="font-bold text-gray-300">£{latest.cost}m</p>
-          </div>
+          {latest.cost !== null && (
+            <div>
+              <p className="text-xs text-gray-500">Cost</p>
+              <p className="font-bold text-gray-300">£{latest.cost}m</p>
+            </div>
+          )}
         </div>
       )}
 
