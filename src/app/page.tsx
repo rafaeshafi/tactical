@@ -1,4 +1,4 @@
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 import { LEAGUES } from '@/types'
 import { LeagueCard } from '@/components/ui/LeagueCard'

@@ -118,4 +118,4 @@ export default async function TacticsPage({ params, searchParams }: Props) {
   )
 }
 
-export const revalidate = 86400
+export const dynamic = 'force-dynamic'
