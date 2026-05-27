@@ -73,27 +73,29 @@ export async function fetchTeamStatistics(teamId: number, leagueId: number, seas
   const s = await apiFetch<ApiTeamStatistics>(
     `/teams/statistics?team=${teamId}&league=${leagueId}&season=${season}`
   )
-  const topFormation = s.lineups.sort((a, b) => b.played - a.played)[0]?.formation ?? '4-3-3'
-  const totalYellow = Object.values(s.cards.yellow).reduce((sum, v) => sum + (v.total ?? 0), 0)
-  const totalRed = Object.values(s.cards.red).reduce((sum, v) => sum + (v.total ?? 0), 0)
+  if (!s || typeof s !== 'object') throw new Error('Empty team statistics response')
+
+  const topFormation = (s.lineups ?? []).sort((a, b) => b.played - a.played)[0]?.formation ?? '4-3-3'
+  const totalYellow = Object.values(s.cards?.yellow ?? {}).reduce((sum, v) => sum + ((v as {total?:number}).total ?? 0), 0)
+  const totalRed    = Object.values(s.cards?.red   ?? {}).reduce((sum, v) => sum + ((v as {total?:number}).total ?? 0), 0)
   return {
     teamId,
     leagueSlug,
     season,
-    formation: topFormation,
-    fixturesPlayed: s.fixtures.played.total,
-    wins: s.fixtures.wins.total,
-    draws: s.fixtures.draws.total,
-    losses: s.fixtures.loses.total,
-    goalsFor: s.goals.for.total.total,
-    goalsAgainst: s.goals.against.total.total,
-    avgPossession: 0,
-    totalShots: 0,
-    shotsOnTarget: 0,
-    totalPasses: s.passes.total.total ?? 0,
-    passAccuracy: s.passes.accuracy.total ?? 0,
-    yellowCards: totalYellow,
-    redCards: totalRed,
+    formation:     topFormation,
+    fixturesPlayed: s.fixtures?.played?.total   ?? 0,
+    wins:           s.fixtures?.wins?.total     ?? 0,
+    draws:          s.fixtures?.draws?.total    ?? 0,
+    losses:         s.fixtures?.loses?.total    ?? 0,
+    goalsFor:       s.goals?.for?.total?.total  ?? 0,
+    goalsAgainst:   s.goals?.against?.total?.total ?? 0,
+    avgPossession:  0,
+    totalShots:     0,
+    shotsOnTarget:  0,
+    totalPasses:    s.passes?.total?.total      ?? 0,
+    passAccuracy:   s.passes?.accuracy?.total   ?? 0,
+    yellowCards:    totalYellow,
+    redCards:       totalRed,
   }
 }
 
