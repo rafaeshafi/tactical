@@ -1,5 +1,5 @@
-import type { ApiStandingEntry, ApiTeamStatistics, ApiFixture } from './types'
-import type { Standing, TeamStatistics, Fixture, Team, LeagueSlug } from '@/types'
+import type { ApiStandingEntry, ApiTeamStatistics, ApiFixture, ApiSquadPlayer } from './types'
+import type { Standing, TeamStatistics, Fixture, Team, LeagueSlug, Player } from '@/types'
 import { LEAGUES } from '@/types'
 
 const BASE_URL = 'https://v3.football.api-sports.io'
@@ -19,9 +19,9 @@ function getHeaders() {
   }
 }
 
-async function apiFetch<T>(path: string): Promise<T> {
+async function apiFetch<T>(path: string, fetchOptions?: RequestInit): Promise<T> {
   const url = `${BASE_URL}${path}`
-  const res = await fetch(url, { headers: getHeaders(), cache: 'no-store' } as RequestInit)
+  const res = await fetch(url, { headers: getHeaders(), cache: 'no-store', ...fetchOptions } as RequestInit)
   if (!res.ok) throw new Error(`API-Football HTTP error: ${res.status}`)
   const data = await res.json()
   // API-Sports returns errors inside the body even on 200 OK
@@ -97,6 +97,31 @@ export async function fetchTeamStatistics(teamId: number, leagueId: number, seas
     yellowCards:    totalYellow,
     redCards:       totalRed,
   }
+}
+
+export async function fetchSquad(teamId: number): Promise<Player[]> {
+  const raw = await apiFetch<{ team: { id: number }; players: ApiSquadPlayer[] }[]>(
+    `/players/squads?team=${teamId}`,
+    // Squad changes rarely — cache for 1 hour
+    { next: { revalidate: 3600 }, cache: undefined } as RequestInit
+  )
+  const players: ApiSquadPlayer[] = raw[0]?.players ?? []
+  return players.map(p => ({
+    id: p.id,
+    name: p.name,
+    surname: p.name.split(' ').pop() ?? p.name,
+    number: p.number ?? null,
+    position: normalisePosition(p.position),
+    photo: p.photo ?? '',
+  }))
+}
+
+function normalisePosition(raw: string): Player['position'] {
+  const s = raw.toLowerCase()
+  if (s.includes('goal')) return 'Goalkeeper'
+  if (s.includes('defend')) return 'Defender'
+  if (s.includes('mid')) return 'Midfielder'
+  return 'Attacker'
 }
 
 export async function fetchRecentFixtures(teamId: number, leagueId: number, last = 5): Promise<Fixture[]> {

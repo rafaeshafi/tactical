@@ -32,9 +32,17 @@ export default async function ManagerPage({ params, searchParams }: Props) {
 
   if (!profile) {
     return (
-      <div className="p-6 rounded-xl border border-[#1e3329] bg-[#111a15] text-gray-400">
-        <p className="font-medium">Manager profile unavailable</p>
-        <p className="text-sm mt-1">Check your ANTHROPIC_API_KEY in .env.local</p>
+      <div className="p-6 rounded-xl border border-yellow-900/40 bg-yellow-900/10 space-y-3">
+        <p className="font-semibold text-yellow-400">🔑 Anthropic API key required</p>
+        <p className="text-sm text-gray-400">
+          The Manager DNA feature uses Claude AI to generate tactical analyses. To enable it:
+        </p>
+        <ol className="text-sm text-gray-400 space-y-1 list-decimal list-inside">
+          <li>Go to <span className="text-[#00ff85]">console.anthropic.com</span> → API Keys → Create key</li>
+          <li>In Vercel: Project → Settings → Environment Variables</li>
+          <li>Add <code className="text-[#00ff85] bg-black/30 px-1 rounded">ANTHROPIC_API_KEY</code> = your key</li>
+          <li>Redeploy the project</li>
+        </ol>
       </div>
     )
   }

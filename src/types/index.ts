@@ -72,3 +72,13 @@ export interface Formation {
   name: string
   lines: number[]
 }
+
+export interface Player {
+  id: number
+  name: string
+  /** Surname only, pre-computed for display */
+  surname: string
+  number: number | null
+  position: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Attacker'
+  photo: string
+}

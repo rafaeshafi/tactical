@@ -26,6 +26,15 @@ export interface ApiTeamStatistics {
   passes: { total: { total: number | null }; accuracy: { total: number | null } }
 }
 
+export interface ApiSquadPlayer {
+  id: number
+  name: string
+  age: number
+  number: number | null
+  position: string
+  photo: string
+}
+
 export interface ApiFixture {
   fixture: { id: number; date: string; status: { short: string } }
   teams: {

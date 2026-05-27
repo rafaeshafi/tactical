@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { LEAGUES } from '@/types'
 import { TacticsBoard } from '@/components/tactics-board/TacticsBoard'
-import { fetchTeamStatistics } from '@/lib/api-football/client'
+import { fetchTeamStatistics, fetchSquad } from '@/lib/api-football/client'
 
 interface Props {
   params: Promise<{ teamId: string }>
@@ -24,15 +24,22 @@ export default async function TacticsBoardPage({ params, searchParams }: Props) 
     formation = stats.formation
   } catch { /* use default */ }
 
+  let squad: Awaited<ReturnType<typeof fetchSquad>> = []
+  try {
+    squad = await fetchSquad(id)
+  } catch { /* board still works without squad */ }
+
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-bold mb-1">Tactics Board</h2>
         <p className="text-sm text-gray-400">
-          Build your own tactical setup. Starts from this team&apos;s current formation. Drag players, draw movement arrows. Saved to your browser.
+          Drag players around the pitch to build your setup. Draw arrows to show movement patterns. Saved to your browser automatically.
         </p>
       </div>
-      <TacticsBoard teamId={teamId} initialFormation={formation} />
+      <TacticsBoard teamId={teamId} initialFormation={formation} squad={squad} />
     </div>
   )
 }
+
+export const dynamic = 'force-dynamic'
