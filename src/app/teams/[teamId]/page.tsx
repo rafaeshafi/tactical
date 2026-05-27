@@ -28,19 +28,26 @@ export default async function TeamOverviewPage({ params, searchParams }: Props) 
   let teamName = 'Team'
   let crestUrl = ''
 
+  // Fetch standings first so team name always shows even if stats fail
   try {
-    const [s, f, standings] = await Promise.all([
-      fetchTeamStatistics(id, meta.apiId),
-      fetchRecentFixtures(id, meta.apiId),
-      fetchStandings(meta.apiId),
-    ])
-    stats = s
-    fixtures = f
+    const standings = await fetchStandings(meta.apiId)
     const standing = standings.find(st => st.team.id === id)
     teamName = standing?.team.name ?? 'Team'
     crestUrl = standing?.team.crestUrl ?? ''
-  } catch {
-    // graceful degradation
+  } catch (e) {
+    console.error('[TeamPage] standings error:', e)
+  }
+
+  // Fetch stats + fixtures independently
+  try {
+    const [s, f] = await Promise.all([
+      fetchTeamStatistics(id, meta.apiId),
+      fetchRecentFixtures(id, meta.apiId),
+    ])
+    stats = s
+    fixtures = f
+  } catch (e) {
+    console.error('[TeamPage] stats/fixtures error:', e)
   }
 
   const pressing = generateMockPressingData('balanced')
