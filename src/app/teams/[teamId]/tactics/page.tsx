@@ -9,6 +9,8 @@ import { getFormationPositions } from '@/lib/tactics/formations'
 import type { Player } from '@/types'
 import type { PressingData } from '@/lib/tactics/pressing'
 import { getTeamStatOverrides } from '@/lib/tactics/teamStats'
+import { getTeamTacticalProfile } from '@/lib/tactics/tacticalProfiles'
+import type { TeamTacticalProfile } from '@/lib/tactics/tacticalProfiles'
 
 interface Props {
   params:       Promise<{ teamId: string }>
@@ -178,6 +180,64 @@ function buildTacticalNotes(
   return notes
 }
 
+// ── Profile tactical notes section ────────────────────────────────────────
+function ProfileNotes({ profile }: { profile: TeamTacticalProfile }) {
+  const paragraphs: [string, string][] = [
+    ['Shape Analysis',      profile.shapeAnalysis],
+    ['Pressing Analysis',   profile.pressAnalysis],
+    ['Build-Up Analysis',   profile.buildUpAnalysis],
+    ['Attacking Patterns',  profile.attackingAnalysis],
+    ['Defensive Shape',     profile.defensiveAnalysis],
+  ]
+  return (
+    <div className="p-5 rounded-xl bg-[#0d1710] border border-[#1e3329] space-y-6">
+      <div className="flex flex-wrap items-center gap-3">
+        <span className="w-2 h-2 rounded-full bg-[#00ff85] inline-block shrink-0" />
+        <h2 className="text-lg font-bold">Tactical Notes</h2>
+        <span className="ml-auto px-3 py-1 rounded-full bg-[#111a15] border border-[#1e3329] text-xs font-semibold text-[#00ff85]">
+          {profile.style}
+        </span>
+      </div>
+      <div className="p-4 rounded-lg bg-[#111a15] border-l-2 border-[#00ff85]">
+        <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">Key Pattern</p>
+        <p className="text-sm text-[#e8f5e9] leading-relaxed">{profile.keyPattern}</p>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-green-400 mb-2">Strengths</p>
+          <ul className="space-y-1.5">
+            {profile.strengths.map((s, i) => (
+              <li key={i} className="flex gap-2 text-sm text-gray-300 leading-relaxed">
+                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-green-500 shrink-0" />
+                {s}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-red-400 mb-2">Weaknesses</p>
+          <ul className="space-y-1.5">
+            {profile.weaknesses.map((w, i) => (
+              <li key={i} className="flex gap-2 text-sm text-gray-300 leading-relaxed">
+                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                {w}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className="space-y-4">
+        {paragraphs.map(([label, text]) => (
+          <div key={label}>
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#00ff85] mb-1">{label}</p>
+            <p className="text-sm text-gray-300 leading-relaxed">{text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ─────────────────────────────────────────────────────────────────────────
 export default async function TacticsPage({ params, searchParams }: Props) {
   const { teamId }                        = await params
@@ -210,6 +270,7 @@ export default async function TacticsPage({ params, searchParams }: Props) {
   const passNetwork = buildPassNetworkFromSquad(formation, squad)
   const { allPoints: heatPoints, players: heatPlayers } = buildFormationHeatmap(formation, squad)
   const notes       = buildTacticalNotes(formation, ppda, passAccuracy)
+  const profile     = getTeamTacticalProfile(id)
 
   return (
     <div className="space-y-6">
@@ -232,6 +293,12 @@ export default async function TacticsPage({ params, searchParams }: Props) {
           <span className="text-gray-400">Pass Accuracy</span>
           <span className="font-mono font-bold text-[#e8f5e9]">{passAccuracy}%</span>
         </div>
+        {profile && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#111a15] border border-[#1e3329] text-sm">
+            <span className="text-gray-400">Tactical Style</span>
+            <span className="font-semibold text-[#00ff85]">{profile.style}</span>
+          </div>
+        )}
       </div>
 
       {/* ── Main grid ──────────────────────────────────────────────────── */}
@@ -288,20 +355,24 @@ export default async function TacticsPage({ params, searchParams }: Props) {
       </div>
 
       {/* ── Tactical Notes ──────────────────────────────────────────────── */}
-      <div className="p-5 rounded-xl bg-[#0d1710] border border-[#1e3329]">
-        <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#00ff85] inline-block" />
-          Tactical Notes
-        </h2>
-        <ul className="space-y-3">
-          {notes.map((note, i) => (
-            <li key={i} className="flex gap-3 text-sm text-gray-300 leading-relaxed">
-              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#00ff85] shrink-0" />
-              {note}
-            </li>
-          ))}
-        </ul>
-      </div>
+      {profile ? (
+        <ProfileNotes profile={profile} />
+      ) : (
+        <div className="p-5 rounded-xl bg-[#0d1710] border border-[#1e3329]">
+          <h2 className="text-lg font-bold mb-3 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#00ff85] inline-block" />
+            Tactical Notes
+          </h2>
+          <ul className="space-y-3">
+            {notes.map((note, i) => (
+              <li key={i} className="flex gap-3 text-sm text-gray-300 leading-relaxed">
+                <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#00ff85] shrink-0" />
+                {note}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   )
 }
