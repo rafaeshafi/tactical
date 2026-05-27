@@ -1,11 +1,19 @@
 import { notFound } from 'next/navigation'
 import { LEAGUES } from '@/types'
+import type { Player } from '@/types'
 import { TacticsBoard } from '@/components/tactics-board/TacticsBoard'
-import { fetchTeamStatistics, fetchSquad } from '@/lib/api-football/client'
+import { fetchTeamStatistics, fetchSquad, fetchRecentFixtures, fetchFixtureLineup } from '@/lib/api-football/client'
 
 interface Props {
   params: Promise<{ teamId: string }>
   searchParams: Promise<{ league?: string }>
+}
+
+function apiPosToPlayerPosition(pos: string): Player['position'] {
+  if (pos === 'G') return 'Goalkeeper'
+  if (pos === 'D') return 'Defender'
+  if (pos === 'M') return 'Midfielder'
+  return 'Attacker'
 }
 
 export default async function TacticsBoardPage({ params, searchParams }: Props) {
@@ -24,10 +32,35 @@ export default async function TacticsBoardPage({ params, searchParams }: Props) 
     formation = stats.formation
   } catch { /* use default */ }
 
-  let squad: Awaited<ReturnType<typeof fetchSquad>> = []
+  // Try to get real starting XI from most recent completed fixture
+  let squad: Player[] = []
   try {
-    squad = await fetchSquad(id)
-  } catch { /* board still works without squad */ }
+    const fixtures = await fetchRecentFixtures(id, meta.apiId)
+    const recentFt = fixtures.find(f => f.status === 'FT')
+    if (recentFt) {
+      const lineup = await fetchFixtureLineup(recentFt.id, id)
+      if (lineup && lineup.startXI.length > 0) {
+        // Use formation from the actual lineup
+        formation = lineup.formation
+        // Convert startXI to Player[] for TacticsBoard
+        squad = lineup.startXI.map(p => ({
+          id: p.id,
+          name: p.name,
+          surname: p.surname,
+          number: p.number,
+          position: apiPosToPlayerPosition(p.pos),
+          photo: p.photo,
+        }))
+      }
+    }
+  } catch { /* fall through to squad fetch */ }
+
+  // Fall back to squad fetch if lineup not available
+  if (squad.length === 0) {
+    try {
+      squad = await fetchSquad(id)
+    } catch { /* board still works without squad */ }
+  }
 
   return (
     <div className="space-y-6">

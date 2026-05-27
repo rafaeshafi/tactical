@@ -1,4 +1,4 @@
-import type { ApiStandingEntry, ApiTeamStatistics, ApiFixture, ApiSquadPlayer } from './types'
+import type { ApiStandingEntry, ApiTeamStatistics, ApiFixture, ApiSquadPlayer, ApiLineupEntry } from './types'
 import type { Standing, TeamStatistics, Fixture, Team, LeagueSlug, Player } from '@/types'
 import { LEAGUES } from '@/types'
 
@@ -122,6 +122,46 @@ function normalisePosition(raw: string): Player['position'] {
   if (s.includes('defend')) return 'Defender'
   if (s.includes('mid')) return 'Midfielder'
   return 'Attacker'
+}
+
+export async function fetchFixtureLineup(
+  fixtureId: number,
+  teamId: number
+): Promise<{
+  formation: string
+  startXI: { id: number; name: string; surname: string; number: number; pos: string; grid: string; photo: string }[]
+  substitutes: { id: number; name: string; surname: string; number: number; pos: string; photo: string }[]
+} | null> {
+  try {
+    const raw = await apiFetch<ApiLineupEntry[]>(
+      `/fixtures/lineups?fixture=${fixtureId}`,
+      { next: { revalidate: 3600 }, cache: undefined } as RequestInit
+    )
+    const entry = raw.find(e => e.team.id === teamId)
+    if (!entry) return null
+    return {
+      formation: entry.formation,
+      startXI: entry.startXI.map(({ player: p }) => ({
+        id: p.id,
+        name: p.name,
+        surname: p.name.split(' ').pop() ?? p.name,
+        number: p.number,
+        pos: p.pos,
+        grid: p.grid ?? '',
+        photo: `https://media.api-sports.io/football/players/${p.id}.png`,
+      })),
+      substitutes: entry.substitutes.map(({ player: p }) => ({
+        id: p.id,
+        name: p.name,
+        surname: p.name.split(' ').pop() ?? p.name,
+        number: p.number,
+        pos: p.pos,
+        photo: `https://media.api-sports.io/football/players/${p.id}.png`,
+      })),
+    }
+  } catch {
+    return null
+  }
 }
 
 export async function fetchRecentFixtures(teamId: number, leagueId: number, last = 5): Promise<Fixture[]> {

@@ -82,3 +82,13 @@ export interface Player {
   position: 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Attacker'
   photo: string
 }
+
+export interface LineupPlayer {
+  id: number
+  name: string
+  surname: string
+  number: number
+  pos: string      // G, D, M, F
+  grid: string     // "row:col"
+  photo: string
+}

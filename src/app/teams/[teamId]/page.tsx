@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { fetchTeamStatistics, fetchRecentFixtures, fetchStandings, fetchSquad } from '@/lib/api-football/client'
+import { fetchTeamStatistics, fetchRecentFixtures, fetchStandings, fetchSquad, fetchFixtureLineup } from '@/lib/api-football/client'
 import { LEAGUES } from '@/types'
 import { FormationPitch } from '@/components/pitch/FormationPitch'
 import { TacticalIdentityCard } from '@/components/ui/TacticalIdentityCard'
@@ -10,6 +10,7 @@ import { generateMockPressingData } from '@/lib/tactics/pressing'
 import { TacticalRadar } from '@/components/charts/TacticalRadar'
 import { buildRadarData } from '@/lib/tactics/radarData'
 import { mapPlayersToFormation } from '@/lib/tactics/playerMapping'
+import { mapLineupToFormation } from '@/lib/tactics/lineupMapping'
 import { getTeamStatOverrides } from '@/lib/tactics/teamStats'
 
 interface Props {
@@ -76,14 +77,28 @@ export default async function TeamOverviewPage({ params, searchParams }: Props) 
 
   const formation = stats?.formation ?? '4-3-3'
 
-  // Map real players to formation positions
-  const mappedPlayers = squad.length > 0
-    ? mapPlayersToFormation(formation, squad).map((p, i) =>
-        p
-          ? { id: p.id, name: p.name, number: p.number ?? i, position: p.position }
-          : null
-      ).filter(Boolean) as { id: number; name: string; number: number; position: string }[]
-    : []
+  // Attempt to fetch the real starting XI from the most recent completed fixture
+  let mappedPlayers: { id: number; name: string; number: number; position: string }[] = []
+  const recentFt = fixtures.find(f => f.status === 'FT')
+  if (recentFt) {
+    try {
+      const lineup = await fetchFixtureLineup(recentFt.id, id)
+      if (lineup && lineup.startXI.length > 0) {
+        mappedPlayers = mapLineupToFormation(lineup.startXI)
+      }
+    } catch (e) {
+      console.error('[TeamPage] lineup error:', e)
+    }
+  }
+
+  // Fall back to squad-based mapping if no lineup was available
+  if (mappedPlayers.length === 0 && squad.length > 0) {
+    mappedPlayers = mapPlayersToFormation(formation, squad)
+      .map((p, i) =>
+        p ? { id: p.id, name: p.name, number: p.number ?? i, position: p.position } : null
+      )
+      .filter(Boolean) as { id: number; name: string; number: number; position: string }[]
+  }
 
   return (
     <div className="space-y-10">

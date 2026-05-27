@@ -44,3 +44,15 @@ export interface ApiFixture {
   goals: { home: number | null; away: number | null }
   score: { fulltime: { home: number | null; away: number | null } }
 }
+
+export interface ApiLineupPlayer {
+  player: { id: number; name: string; number: number; pos: string; grid: string | null }
+}
+
+export interface ApiLineupEntry {
+  team: { id: number; name: string }
+  coach: { name: string }
+  formation: string
+  startXI: ApiLineupPlayer[]
+  substitutes: ApiLineupPlayer[]
+}
