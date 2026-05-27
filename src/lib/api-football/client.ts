@@ -15,7 +15,10 @@ const CURRENT_SEASON = currentSeason()
 function getHeaders() {
   const key = process.env.API_FOOTBALL_KEY
   if (!key) throw new Error('API_FOOTBALL_KEY is not set')
+  // api-sports.io direct keys → x-apisports-key
+  // RapidAPI keys            → x-rapidapi-key  (kept for compatibility)
   return {
+    'x-apisports-key': key,
     'x-rapidapi-key': key,
     'x-rapidapi-host': 'v3.football.api-sports.io',
   }
@@ -24,8 +27,12 @@ function getHeaders() {
 async function apiFetch<T>(path: string): Promise<T> {
   const url = `${BASE_URL}${path}`
   const res = await fetch(url, { headers: getHeaders(), next: { revalidate: 86400 } } as RequestInit)
-  if (!res.ok) throw new Error(`API-Football error: ${res.status}`)
+  if (!res.ok) throw new Error(`API-Football HTTP error: ${res.status}`)
   const data = await res.json()
+  // API-Sports returns errors inside the body even on 200 OK
+  if (data.errors && Object.keys(data.errors).length > 0) {
+    throw new Error(`API-Football response error: ${JSON.stringify(data.errors)}`)
+  }
   return data.response as T
 }
 
