@@ -32,34 +32,63 @@ export default async function TacticsBoardPage({ params, searchParams }: Props) 
     formation = stats.formation
   } catch { /* use default */ }
 
-  // Try to get real starting XI from most recent completed fixture
-  let squad: Player[] = []
+  // Always fetch the full registered squad for the bench
+  let fullSquad: Player[] = []
+  try {
+    fullSquad = await fetchSquad(id)
+  } catch { /* board works without squad */ }
+
+  // Also fetch starting XI from most recent fixture to order the pitch correctly
+  let startingIds = new Set<number>()
+  let lineupPlayers: Player[] = []
+
   try {
     const fixtures = await fetchRecentFixtures(id, meta.apiId)
     const recentFt = fixtures.find(f => f.status === 'FT')
     if (recentFt) {
       const lineup = await fetchFixtureLineup(recentFt.id, id)
       if (lineup && lineup.startXI.length > 0) {
-        // Use formation from the actual lineup
         formation = lineup.formation
-        // Convert startXI to Player[] for TacticsBoard
-        squad = lineup.startXI.map(p => ({
-          id: p.id,
-          name: p.name,
-          surname: p.surname,
-          number: p.number,
-          position: apiPosToPlayerPosition(p.pos),
-          photo: p.photo,
-        }))
+
+        // Convert starters and subs from lineup to Player[]
+        const allLineupPlayers = [
+          ...lineup.startXI.map(p => ({
+            id: p.id,
+            name: p.name,
+            surname: p.surname,
+            number: p.number,
+            position: apiPosToPlayerPosition(p.pos),
+            photo: p.photo,
+          })),
+          ...lineup.substitutes.map(p => ({
+            id: p.id,
+            name: p.name,
+            surname: p.surname,
+            number: p.number,
+            position: apiPosToPlayerPosition(p.pos),
+            photo: p.photo,
+          })),
+        ]
+
+        lineupPlayers = allLineupPlayers
+        startingIds = new Set(lineup.startXI.map(p => p.id))
       }
     }
-  } catch { /* fall through to squad fetch */ }
+  } catch { /* fall through */ }
 
-  // Fall back to squad fetch if lineup not available
-  if (squad.length === 0) {
-    try {
-      squad = await fetchSquad(id)
-    } catch { /* board still works without squad */ }
+  let squad: Player[]
+  if (lineupPlayers.length > 0) {
+    // Starters first (for correct pitch slot mapping), then:
+    //  - subs from the lineup
+    //  - anyone in the registered squad not already covered
+    const lineupIds = new Set(lineupPlayers.map(p => p.id))
+    const starters  = lineupPlayers.filter(p => startingIds.has(p.id))
+    const subs      = lineupPlayers.filter(p => !startingIds.has(p.id))
+    const extra     = fullSquad.filter(p => !lineupIds.has(p.id))
+    squad = [...starters, ...subs, ...extra]
+  } else {
+    // No lineup — use full squad; the board will distribute by position
+    squad = fullSquad
   }
 
   return (
@@ -67,7 +96,7 @@ export default async function TacticsBoardPage({ params, searchParams }: Props) 
       <div>
         <h2 className="text-xl font-bold mb-1">Tactics Board</h2>
         <p className="text-sm text-gray-400">
-          Drag players around the pitch to build your setup. Draw arrows to show movement patterns. Saved to your browser automatically.
+          Drag players to reshape the formation. Sub players on from the bench. Add future signings in the Custom tab.
         </p>
       </div>
       <TacticsBoard teamId={teamId} initialFormation={formation} squad={squad} />
