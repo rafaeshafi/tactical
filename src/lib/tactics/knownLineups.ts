@@ -1,4 +1,4 @@
-// 2024/25 Premier League most-fielded starting XIs, keyed by API-Sports team ID
+// 2025/26 Premier League expected starting XIs, keyed by API-Sports team ID
 
 export interface KnownPlayer {
   name: string
@@ -19,39 +19,39 @@ function p(id: number): string {
 }
 
 const LINEUPS: Record<number, KnownLineup> = {
-  // Liverpool (40) — 4-2-3-1
+  // Liverpool (40) — 4-2-3-1 (2025/26: Wirtz + Frimpong replace Salah + Trent)
   40: {
     formation: '4-2-3-1',
     startXI: [
-      { name: 'Alisson',           surname: 'Becker',          number: 1,  position: 'Goalkeeper', photo: p(274) },
-      { name: 'Trent',             surname: 'Alexander-Arnold', number: 66, position: 'Defender',   photo: p(627) },
-      { name: 'Ibrahima',          surname: 'Konaté',           number: 5,  position: 'Defender',   photo: p(38831) },
-      { name: 'Virgil',            surname: 'Van Dijk',         number: 4,  position: 'Defender',   photo: p(280) },
-      { name: 'Andrew',            surname: 'Robertson',        number: 26, position: 'Defender',   photo: p(790) },
-      { name: 'Alexis',            surname: 'Mac Allister',     number: 10, position: 'Midfielder', photo: p(48062) },
-      { name: 'Ryan',              surname: 'Gravenberch',      number: 38, position: 'Midfielder', photo: p(200671) },
-      { name: 'Mohamed',           surname: 'Salah',            number: 11, position: 'Attacker',   photo: p(306) },
-      { name: 'Dominik',          surname: 'Szoboszlai',       number: 8,  position: 'Midfielder', photo: p(226484) },
-      { name: 'Luis',              surname: 'Diaz',             number: 7,  position: 'Attacker',   photo: p(171923) },
-      { name: 'Darwin',            surname: 'Nunez',            number: 9,  position: 'Attacker',   photo: p(168524) },
+      { name: 'Alisson',    surname: 'Becker',       number: 1,  position: 'Goalkeeper', photo: p(274) },
+      { name: 'Jeremie',    surname: 'Frimpong',     number: 2,  position: 'Defender',   photo: p(0) },
+      { name: 'Ibrahima',   surname: 'Konaté',       number: 5,  position: 'Defender',   photo: p(38831) },
+      { name: 'Virgil',     surname: 'Van Dijk',     number: 4,  position: 'Defender',   photo: p(280) },
+      { name: 'Andrew',     surname: 'Robertson',    number: 26, position: 'Defender',   photo: p(790) },
+      { name: 'Alexis',     surname: 'Mac Allister', number: 10, position: 'Midfielder', photo: p(48062) },
+      { name: 'Ryan',       surname: 'Gravenberch',  number: 38, position: 'Midfielder', photo: p(200671) },
+      { name: 'Florian',    surname: 'Wirtz',        number: 11, position: 'Attacker',   photo: p(0) },
+      { name: 'Dominik',    surname: 'Szoboszlai',   number: 8,  position: 'Midfielder', photo: p(226484) },
+      { name: 'Luis',       surname: 'Diaz',         number: 7,  position: 'Attacker',   photo: p(171923) },
+      { name: 'Darwin',     surname: 'Nunez',        number: 9,  position: 'Attacker',   photo: p(168524) },
     ],
   },
 
-  // Arsenal (42) — 4-3-3
+  // Arsenal (42) — 4-3-3 (2025/26: Gyokeres replaces Havertz as CF)
   42: {
     formation: '4-3-3',
     startXI: [
-      { name: 'David',             surname: 'Raya',             number: 22, position: 'Goalkeeper', photo: p(39115) },
-      { name: 'Ben',               surname: 'White',            number: 4,  position: 'Defender',   photo: p(1485) },
-      { name: 'William',           surname: 'Saliba',           number: 12, position: 'Defender',   photo: p(280011) },
-      { name: 'Gabriel',           surname: 'Magalhães',        number: 6,  position: 'Defender',   photo: p(49156) },
-      { name: 'Jurrien',           surname: 'Timber',           number: 24, position: 'Defender',   photo: p(178054) },
-      { name: 'Thomas',            surname: 'Partey',           number: 5,  position: 'Midfielder', photo: p(18096) },
-      { name: 'Declan',            surname: 'Rice',             number: 41, position: 'Midfielder', photo: p(8942) },
-      { name: 'Martin',            surname: 'Ødegaard',         number: 8,  position: 'Midfielder', photo: p(47050) },
-      { name: 'Bukayo',            surname: 'Saka',             number: 7,  position: 'Attacker',   photo: p(184240) },
-      { name: 'Kai',               surname: 'Havertz',          number: 29, position: 'Attacker',   photo: p(148946) },
-      { name: 'Gabriel',           surname: 'Martinelli',       number: 11, position: 'Attacker',   photo: p(397947) },
+      { name: 'David',    surname: 'Raya',        number: 22, position: 'Goalkeeper', photo: p(39115) },
+      { name: 'Ben',      surname: 'White',       number: 4,  position: 'Defender',   photo: p(1485) },
+      { name: 'William',  surname: 'Saliba',      number: 12, position: 'Defender',   photo: p(280011) },
+      { name: 'Gabriel',  surname: 'Magalhães',   number: 6,  position: 'Defender',   photo: p(49156) },
+      { name: 'Jurrien',  surname: 'Timber',      number: 24, position: 'Defender',   photo: p(178054) },
+      { name: 'Thomas',   surname: 'Partey',      number: 5,  position: 'Midfielder', photo: p(18096) },
+      { name: 'Declan',   surname: 'Rice',        number: 41, position: 'Midfielder', photo: p(8942) },
+      { name: 'Martin',   surname: 'Ødegaard',    number: 8,  position: 'Midfielder', photo: p(47050) },
+      { name: 'Bukayo',   surname: 'Saka',        number: 7,  position: 'Attacker',   photo: p(184240) },
+      { name: 'Viktor',   surname: 'Gyökeres',    number: 9,  position: 'Attacker',   photo: p(0) },
+      { name: 'Gabriel',  surname: 'Martinelli',  number: 11, position: 'Attacker',   photo: p(397947) },
     ],
   },
 
