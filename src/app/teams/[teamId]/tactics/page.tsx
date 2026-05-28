@@ -11,6 +11,7 @@ import type { PressingData } from '@/lib/tactics/pressing'
 import { getTeamStatOverrides } from '@/lib/tactics/teamStats'
 import { getTeamTacticalProfile } from '@/lib/tactics/tacticalProfiles'
 import type { TeamTacticalProfile } from '@/lib/tactics/tacticalProfiles'
+import { getKnownLineup } from '@/lib/tactics/knownLineups'
 
 interface Props {
   params:       Promise<{ teamId: string }>
@@ -194,8 +195,13 @@ function ProfileNotes({ profile }: { profile: TeamTacticalProfile }) {
       <div className="flex flex-wrap items-center gap-3">
         <span className="w-2 h-2 rounded-full bg-[#00ff85] inline-block shrink-0" />
         <h2 className="text-lg font-bold">Tactical Notes</h2>
-        <span className="ml-auto px-3 py-1 rounded-full bg-[#111a15] border border-[#1e3329] text-xs font-semibold text-[#00ff85]">
-          {profile.style}
+        <span className="ml-auto flex items-center gap-2">
+          <span className="px-2 py-0.5 rounded-full bg-[#00ff85]/10 border border-[#00ff85]/30 text-[10px] font-semibold text-[#00ff85]">
+            2025/26
+          </span>
+          <span className="px-3 py-1 rounded-full bg-[#111a15] border border-[#1e3329] text-xs font-semibold text-[#00ff85]">
+            {profile.style}
+          </span>
         </span>
       </div>
       <div className="p-4 rounded-lg bg-[#111a15] border-l-2 border-[#00ff85]">
@@ -251,20 +257,43 @@ export default async function TacticsPage({ params, searchParams }: Props) {
 
   let formation = '4-3-3'
   let ppda      = 10.2
-  try {
-    const stats = await fetchTeamStatistics(id, meta.apiId)
-    formation   = stats.formation
-  } catch { /* keep defaults */ }
+
+  // 1. Try hardcoded 2025/26 lineup first (always preferred over API)
+  const knownLineup = getKnownLineup(id)
+
+  if (knownLineup) {
+    formation = knownLineup.formation
+  } else {
+    // Fall back to API for teams without a hardcoded lineup
+    try {
+      const stats = await fetchTeamStatistics(id, meta.apiId)
+      formation   = stats.formation
+    } catch { /* keep default */ }
+  }
 
   const overrides = getTeamStatOverrides(id)
   if (overrides) ppda = overrides.ppda
 
   const passAccuracy = overrides?.passAccuracy ?? 78
 
+  // 2. Build squad from hardcoded 2025/26 XI, or fall back to API squad
   let squad: Player[] = []
-  try {
-    squad = await fetchSquad(id)
-  } catch { /* pass network falls back to role labels */ }
+  if (knownLineup) {
+    squad = knownLineup.startXI.map((p, i) => ({
+      id: i + 1,
+      name: p.name,
+      surname: p.surname,
+      number: p.number,
+      position: p.position,
+      photo: p.photo,
+    }))
+  } else {
+    try {
+      squad = await fetchSquad(id)
+    } catch { /* pass network falls back to role labels */ }
+  }
+
+  const usingKnown = knownLineup !== null
 
   const pressing    = buildPressingFromPPDA(ppda)
   const passNetwork = buildPassNetworkFromSquad(formation, squad)
@@ -276,6 +305,10 @@ export default async function TacticsPage({ params, searchParams }: Props) {
     <div className="space-y-6">
       {/* ── Quick-stat header chips ─────────────────────────────────────── */}
       <div className="flex flex-wrap gap-3">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#00ff85]/10 border border-[#00ff85]/40 text-sm">
+          <span className="font-semibold text-[#00ff85]">2025/26 Season</span>
+          {usingKnown && <span className="text-[10px] text-gray-400">· confirmed XI</span>}
+        </div>
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#111a15] border border-[#1e3329] text-sm">
           <span className="text-gray-400">Formation</span>
           <span className="font-mono font-bold text-[#00ff85]">{formation}</span>
