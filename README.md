@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tactical
 
-## Getting Started
+A football analysis site for people who want to know *how* a team plays, not just whether
+it won. Formation shapes, pressing intensity, pass networks, set-piece routines, and
+manager profiles across Europe's top five leagues.
 
-First, run the development server:
+**[Live →](https://tactical-beige.vercel.app)**
+
+## What it does
+
+**Team tactics** — formation and average shape, pressing intensity, build-up patterns,
+and a radar of the stats that actually separate one side from another.
+
+**Pass networks** — who receives from whom, and where the ball genuinely moves through a
+side rather than where the formation diagram says it should.
+
+**Set pieces** — corner and free-kick routines, mapped rather than described.
+
+**Tactics board** — a drag-and-drop pitch per team: move players, draw arrows, set your
+own shape. Boards save to your browser, so no account is needed.
+
+**Manager DNA** — an AI-written profile of each manager's philosophy, coaching lineage,
+and tactical habits, generated from their record and squad usage.
+
+**FPL insights** — player data pulled through from a Fantasy Premier League angle.
+
+Covers the Premier League, La Liga, Bundesliga, Serie A, and Ligue 1.
+
+## Stack
+
+Next.js (App Router) with React and TypeScript, Tailwind with shadcn/Radix primitives,
+D3 and Recharts for the visualisations, Framer Motion for transitions. Live football data
+comes from API-Football; manager profiles are generated with the Anthropic API.
+
+The homepage fetches all five league tables concurrently and degrades gracefully — if a
+league's request fails, the rest of the page still renders rather than the whole route
+erroring out.
+
+## Layout
+
+```
+src/app/              routes — leagues/[league], teams/[teamId]/{tactics,tactics-board,
+                      set-pieces,manager,fpl}, matches/[matchId], api/*
+src/lib/api-football/  API-Football client and types
+src/lib/tactics/      the analysis itself — formations, pressing, pass networks,
+                      set-piece routines, lineup mapping, stat analysis
+src/lib/ai/           manager profile generation
+src/lib/fpl/          Fantasy Premier League player database
+src/components/       pitch, tactics-board, charts, manager, ui
+tests/                vitest suites for lib and components
+data/managers/        manager reference data
+```
+
+## Running it locally
+
+Requires Node 20+.
+
+```bash
+npm install
+```
+
+Create `.env.local`:
+
+```bash
+API_FOOTBALL_KEY=      # api-football.com
+ANTHROPIC_API_KEY=     # manager profiles
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Checks
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build   # next build
+npm test        # vitest
+npm run lint    # eslint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Note
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project runs on a Next.js version whose APIs and conventions differ from most
+examples you'll find online — check `node_modules/next/dist/docs/` before assuming an
+older pattern still applies.
